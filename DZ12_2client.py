@@ -1,19 +1,12 @@
-import asyncio 
-HOST = "localhost"
-PORT = 54000
-async def run_client():
-    reader, writer = await asyncio.open_connection(HOST, PORT)
-    a = input('Number A:')
-    b = input("NUmber B:")
-    r = f"{a} {b}"
-    writer.write(bytes(str(r)), encoding="UTF-8")
-    await writer.drain()
-    while True:
-        data =  await reader.read(1024)
-        if not data:
-            raise Exception("socket closed")
-        print(f"{data.decode()}")
-if __name__ == "__main__":
+import socket
 
-    loop = asyncio.new_event_loop()
-    loop.run_ until_complete(run_client())
+
+def s_client(ip, port, operation, number_1, number_2):
+    my_socket = socket.socket()
+    my_socket.connect((ip, port))
+    my_socket.send(f"{operation} {number_1} {number_2}\n".encode("utf-8"))
+    message = my_socket.recv(1024)
+    print(message.decode('utf-8'))
+
+
+s_client("127.0.0.1", 8000, "**", 180, 90)

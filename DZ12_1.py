@@ -1,33 +1,51 @@
 import concurrent.futures
 import time
-def factorial(n):
-    res = 1
-    for i in range(1,n+1):
-        res *= i
-        return res
-numbers_for_factorials = [i for i in range(1,11)]
-result = {}
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    started_at = time.time()
-    for number, fact in zip(numbers_for_factorials, executor.map(factorial, numbers_for_factorials)):
-      print(f'The {number} factorial is :{fact}')
-      t1 = time.time() - started_at
-      result['ProcessPoolExecutor'] = t1
-      print(f"Time in  ProcessPoolExecutor:{t1}")
-with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-    started_at = time.time()
-    f = {executor.submit(factorial, number): number for  number in numbers_for_factorials}
-    for future in concurrent.futures.as_completed(f):
-        number = f[future]
-        try:
-            data = future.result()
-        except Exception as exc:
-            print(f"exc")
-        else:
-            print(f"The {number} factorial is:{data}")
-        t2 = time.time() - started_at
-        result['ThreadPoolExecutor'] = t2
-        print(f"Time in ThreadPoolExecutor:{t2}")
-fast = min(result, key = result.get)
-print(f"{fast} is faster")
 
+
+def factorial(number):
+    result = 1
+    for i in range(1, number + 1):
+        result *= i
+    return result
+
+
+def main(arguments):
+    start_1 = time.time()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {
+            executor.submit(factorial, argument): argument for argument in arguments
+        }
+        for future in concurrent.futures.as_completed(futures):
+            argument = futures[future]
+            print(f"Result of {argument} is {future.result()}")
+
+    end_1 = time.time()
+
+    result_thread_time = end_1 - start_1
+    return result_thread_time
+
+
+def main_2(arguments):
+    start = time.time()
+    with concurrent.futures.ProcessPoolExecutor(4) as executor:
+        futures = {
+            executor.submit(factorial, argument): argument for argument in arguments
+        }
+        for future in concurrent.futures.as_completed(futures):
+            argument = futures[future]
+            print(f"Result of {argument} is {future.result()}")
+
+    finish = time.time()
+
+    result_process_time = finish - start
+    return result_process_time
+
+
+list_for_compare = [264, 88, 48, 11]
+if __name__ == '__main__':
+    thread_time = main(list_for_compare)
+    process_time = main_2(list_for_compare)
+    if thread_time > process_time:
+        print(f"PROCESS TIME: {process_time} is faster")
+    else:
+        print(f"THREAD TIME: {thread_time} is faster")
